@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 pygame.init()
 
 class DropdownMenu:
@@ -106,7 +107,7 @@ class DrawingInformation:
         self.min_val = min(lst)
 
         self.block_width = round((self.width - self.SIDE_PAD) / len(lst))
-        self.block_height = round((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
+        self.block_height = math.floor((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
         self.start_x = self.SIDE_PAD // 2
 
     def calculate_button_positions(self, num_buttons, dropdown_width):
