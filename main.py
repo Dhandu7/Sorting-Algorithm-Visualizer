@@ -4,18 +4,23 @@ import math
 from dropdown import DropdownMenu  # Import the DropdownMenu class
 
 pygame.init()
-
 class Button:
-    def __init__(self, x, y, image):
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
+    def __init__(self, x, y, width, height, text, font, bg_color, text_color):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = font
+        self.bg_color = bg_color
+        self.text_color = text_color
 
     def draw_button(self, window):
-        window.blit(self.image, (self.rect.x, self.rect.y))
+        pygame.draw.rect(window, self.bg_color, self.rect)
+        text_surf = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        window.blit(text_surf, text_rect)
 
     def is_clicked(self, pos):
         return self.rect.collidepoint(pos)
+
 
 class DrawingInformation:
     BLACK = 0,0,0
