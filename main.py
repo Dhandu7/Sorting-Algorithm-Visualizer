@@ -12,6 +12,13 @@ class DropdownMenu:
         self.selected_option = options[0]
         self.active = False
         self.option_rects = [pygame.Rect(x, y + (i + 1) * h, w, h) for i in range(len(options))]
+        self.sorting_functions = {
+            "Bubble Sort": bubble_sort,
+            "Selection Sort": selection_sort,  # Ensure you define these sorting functions
+            "Insertion Sort": insertion_sort,  # Define these functions
+            "Merge Sort": merge_sort,          # Define these functions
+            "Quick Sort": quick_sort 
+        }
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
@@ -39,7 +46,7 @@ class DropdownMenu:
                     self.active = False
 
     def get_selected_option(self):
-        return self.selected_option
+        return self.sorting_functions.get(self.selected_option, bubble_sort)
 
 
 class Button:
@@ -127,8 +134,14 @@ def draw(draw_info, buttons, dropdown):
 
     pygame.display.update()
 
-def draw_list(draw_info):
+def draw_list(draw_info,color_positions={}, clear_bg=False):
     lst = draw_info.lst
+
+    if clear_bg:
+        clear_rect=(draw_info.SIDEPAD//2,draw_info.TOP_PAD,
+                    draw_info.WIDTH-draw_info.SIDE_PAD,draw_info.height-draw_info.TOP_PAD)
+
+        pygame.draw.rect(draw_info.window,draw_info.BACKGROUND_COLOR,clear_rect)
 
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.block_width
@@ -136,7 +149,14 @@ def draw_list(draw_info):
         y = draw_info.height - block_height
 
         color = draw_info.GRADIENTS[i % 3]
+
+        if i in color_positions:
+            color = color_positions[i]
+
         pygame.draw.rect(draw_info.window, color, (x, y, draw_info.block_width, block_height))
+
+    if clear_bg:
+        pygame.display.update()
 
 def generate_starting_list(n, min_val, max_val):
     lst = []
@@ -155,10 +175,20 @@ def bubble_sort(draw_info,ascending=True):
 
             if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
                 lst[j],lst[j+1] = lst[j+1],lst[j]
-                #draw_list()
-                yield True 
+                draw_list(draw_info,{j:draw_info.GREEN,j+1:draw_info.RED})
+                yield True #saves current state
     return lst
 
+next()
+
+def selection_sort(draw_info,ascending=True):
+    pass
+def insertion_sort(draw_info,ascending=True):
+    pass
+def merge_sort(draw_info,ascending=True):
+    pass
+def quick_sort(draw_info,ascending=True):
+    pass
 
 def main():
     run = True
@@ -188,6 +218,10 @@ def main():
     sorting = False
     ascending = True
 
+    selected_sort = dropdown.get_selected_option()
+    sorting_algorithm_generator=None
+    
+
     while run:
         clock.tick(60)
 
@@ -204,12 +238,15 @@ def main():
                     lst = generate_starting_list(n, min_val, max_val)
                     draw_info.set_list(lst)
                     sorting = False
+
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
-                    selected_sort = dropdown.get_selected_option()
+                    sorting_algorithm_generator=selected_sort(draw_info,ascending)
                     print(f"Selected Sorting Algorithm: {selected_sort}")
+
                 elif ascend_button.is_clicked(pos) and not sorting:
                     ascending = True
+
                 elif descend_button.is_clicked(pos) and not sorting:
                     ascending = False
 
