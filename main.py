@@ -138,8 +138,8 @@ def draw_list(draw_info,color_positions={}, clear_bg=False):
     lst = draw_info.lst
 
     if clear_bg:
-        clear_rect=(draw_info.SIDEPAD//2,draw_info.TOP_PAD,
-                    draw_info.WIDTH-draw_info.SIDE_PAD,draw_info.height-draw_info.TOP_PAD)
+        clear_rect=(draw_info.SIDE_PAD//2,draw_info.TOP_PAD,
+                    draw_info.width-draw_info.SIDE_PAD,draw_info.height-draw_info.TOP_PAD)
 
         pygame.draw.rect(draw_info.window,draw_info.BACKGROUND_COLOR,clear_rect)
 
@@ -175,11 +175,9 @@ def bubble_sort(draw_info,ascending=True):
 
             if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
                 lst[j],lst[j+1] = lst[j+1],lst[j]
-                draw_list(draw_info,{j:draw_info.GREEN,j+1:draw_info.RED})
+                draw_list(draw_info,{j:draw_info.GREEN,j+1:draw_info.RED},True)
                 yield True #saves current state
     return lst
-
-next()
 
 def selection_sort(draw_info,ascending=True):
     pass
@@ -224,8 +222,13 @@ def main():
 
     while run:
         clock.tick(60)
-
-        draw(draw_info, buttons, dropdown)
+        if sorting:
+            try:
+                next(sorting_algorithm_generator)
+            except StopIteration:
+                sorting=False
+        else:
+            draw(draw_info, buttons, dropdown)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -242,7 +245,6 @@ def main():
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
                     sorting_algorithm_generator=selected_sort(draw_info,ascending)
-                    print(f"Selected Sorting Algorithm: {selected_sort}")
 
                 elif ascend_button.is_clicked(pos) and not sorting:
                     ascending = True
