@@ -169,6 +169,13 @@ def generate_starting_list(n, min_val, max_val):
         lst.append(val)
     return lst
 
+def is_sorted(lst, ascending=True):
+    n = len(lst)
+    if ascending:
+        return all(lst[i] <= lst[i + 1] for i in range(n - 1))
+    else:
+        return all(lst[i] >= lst[i + 1] for i in range(n - 1))
+
 def bubble_sort(draw_info,ascending=True):
     lst=draw_info.lst
 
@@ -227,6 +234,10 @@ def insertion_sort(draw_info,ascending=True):
 def merge_sort(draw_info, ascending=True):
     lst = draw_info.lst
 
+    # Check if the list is already sorted
+    if is_sorted(lst, ascending):
+        return
+
     def merge(left, right, start):
         merged = []
         i = j = 0
@@ -263,10 +274,12 @@ def merge_sort(draw_info, ascending=True):
 
     yield from merge_sort_recursive(0, len(lst) - 1)
 
-
-
 def quick_sort(draw_info, ascending=True):
     lst = draw_info.lst
+
+    # Check if the list is already sorted
+    if is_sorted(lst, ascending):
+        return
 
     def partition(start, end):
         pivot = lst[end]
@@ -292,7 +305,6 @@ def quick_sort(draw_info, ascending=True):
 
     yield from quick_sort_recursive(0, len(lst) - 1)
     return lst
-
 
 
 def main():
