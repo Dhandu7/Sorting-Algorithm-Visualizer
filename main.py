@@ -20,6 +20,14 @@ class DropdownMenu:
             "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
+        self.code=[['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn']]
+        self.descriptions = {
+            "Bubble Sort": self.code[0],
+            "Selection Sort": self.code[1],
+            "Insertion Sort": self.code[2],  
+            "Merge Sort": self.code[3],          
+            "Quick Sort": self.code[4] 
+        }
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
