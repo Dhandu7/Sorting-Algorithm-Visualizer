@@ -84,8 +84,8 @@ class Button:
 class DrawingInformation:
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
-    GREEN = 0, 255, 0
-    RED = 255, 0, 0
+    GREEN = 50, 205, 50
+    RED = 220, 20, 60
     BLUE = 50, 50, 150
     BACKGROUND_COLOR = WHITE
 
@@ -95,7 +95,7 @@ class DrawingInformation:
         (192, 192, 192)
     ]
 
-    FONT = pygame.font.SysFont('arial', 20)
+    FONT = pygame.font.Font('arial', 20)
     LARGE_FONT = pygame.font.SysFont('arial', 30)
     SIDE_PAD = 100
     TOP_PAD = 150
