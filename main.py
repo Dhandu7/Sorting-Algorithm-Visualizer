@@ -183,8 +183,27 @@ def bubble_sort(draw_info,ascending=True):
                 yield True #saves current state
     return lst
 
-def selection_sort(draw_info,ascending=True):
-    pass
+def selection_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    for i in range(len(lst)):
+        min_index = i
+
+        for j in range(i + 1, len(lst)):
+            draw_list(draw_info, {i: draw_info.BLUE, j: draw_info.RED, min_index: draw_info.GREEN}, True)
+            yield True  
+
+            if (lst[j] < lst[min_index] and ascending) or (lst[j] > lst[min_index] and not ascending):
+                min_index = j
+
+        # Swap the found minimum/maximum element with the first element
+        if min_index != i:
+            lst[i], lst[min_index] = lst[min_index], lst[i]
+            draw_list(draw_info, {i: draw_info.GREEN, min_index: draw_info.RED}, True)
+            yield True  
+
+    return lst
+
 
 def insertion_sort(draw_info,ascending=True):
     lst=draw_info.lst
@@ -240,7 +259,6 @@ def main():
     sorting = False
     ascending = True
 
-    selected_sort = dropdown.get_selected_option()
     sorting_algorithm_generator=None
 
     while run:
@@ -268,6 +286,7 @@ def main():
 
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
+                    selected_sort = dropdown.get_selected_option()
                     sorting_algorithm_generator=selected_sort(draw_info,ascending)
 
                 elif ascend_button.is_clicked(pos) and not sorting:
