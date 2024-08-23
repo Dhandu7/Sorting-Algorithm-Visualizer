@@ -15,9 +15,9 @@ class DropdownMenu:
         self.option_rects = [pygame.Rect(x, y + (i + 1) * h, w, h) for i in range(len(options))]
         self.sorting_functions = {
             "Bubble Sort": bubble_sort,
-            "Selection Sort": selection_sort,  # Ensure you define these sorting functions
-            "Insertion Sort": insertion_sort,  # Define these functions
-            "Merge Sort": merge_sort,          # Define these functions
+            "Selection Sort": selection_sort,
+            "Insertion Sort": insertion_sort,  
+            "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
 
