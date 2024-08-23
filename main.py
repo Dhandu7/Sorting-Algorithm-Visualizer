@@ -47,7 +47,10 @@ class DropdownMenu:
                     self.active = False
 
     def get_selected_option(self):
-        return self.sorting_functions.get(self.selected_option, bubble_sort)
+        return self.sorting_functions.get(self.selected_option)
+    
+    def get_algorithm_name(self):
+        return self.selected_option
 
 
 class Button:
@@ -121,9 +124,9 @@ class DrawingInformation:
         dropdown_x = start_x + num_buttons * (self.BUTTON_WIDTH + self.BUTTON_PADDING)
         return button_positions, dropdown_x
 
-def draw(draw_info, buttons, dropdown):
+def draw(draw_info, buttons, dropdown, sort_name, ascending):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render("Sorting Algorithm Visualization Tool", 1, draw_info.BLACK)
+    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'}",1,draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
 
     draw_list(draw_info)
@@ -182,12 +185,32 @@ def bubble_sort(draw_info,ascending=True):
 
 def selection_sort(draw_info,ascending=True):
     pass
+
 def insertion_sort(draw_info,ascending=True):
-    pass
+    lst=draw_info.lst
+    for i in range(1,len(lst)):
+        current=lst[i]
+
+        while True:
+            ascending_sort= i >0 and lst[i-1] > current and ascending
+            descending_sort= i >0 and lst[i-1] < current and not ascending
+
+            if not ascending_sort and not descending_sort:
+                break
+
+            lst[i] = lst[i-1]
+            i-=1
+            lst[i]=current
+            draw_list(draw_info,{i-1:draw_info.GREEN, i: draw_info.RED}, True)
+            yield True
+    return lst
+
 def merge_sort(draw_info,ascending=True):
-    pass
+    lst=draw_info.lst
+
 def quick_sort(draw_info,ascending=True):
-    pass
+    lst=draw_info.lst
+
 
 def main():
     run = True
@@ -219,7 +242,6 @@ def main():
 
     selected_sort = dropdown.get_selected_option()
     sorting_algorithm_generator=None
-    
 
     while run:
         clock.tick(60)
@@ -229,7 +251,8 @@ def main():
             except StopIteration:
                 sorting=False
         else:
-            draw(draw_info, buttons, dropdown)
+            sort_name = dropdown.get_algorithm_name()
+            draw(draw_info, buttons, dropdown, sort_name, ascending)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
