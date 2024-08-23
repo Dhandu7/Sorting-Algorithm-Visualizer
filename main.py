@@ -192,6 +192,8 @@ def bubble_sort(draw_info,ascending=True):
 
 def selection_sort(draw_info, ascending=True):
     lst = draw_info.lst
+    if is_sorted(lst, ascending):
+        return
 
     for i in range(len(lst)):
         min_index = i
