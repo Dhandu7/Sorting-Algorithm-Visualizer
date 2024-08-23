@@ -20,13 +20,13 @@ class DropdownMenu:
             "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
-        self.code=[['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn']]
-        self.descriptions = {
+        self.code=['O(n^2)','O(nlogn)',]
+        self.complexity = {
             "Bubble Sort": self.code[0],
-            "Selection Sort": self.code[1],
-            "Insertion Sort": self.code[2],  
-            "Merge Sort": self.code[3],          
-            "Quick Sort": self.code[4] 
+            "Selection Sort": self.code[0],
+            "Insertion Sort": self.code[0],  
+            "Merge Sort": self.code[1],        
+            "Quick Sort": self.code[1] 
         }
 
     def draw(self, screen):
@@ -59,6 +59,9 @@ class DropdownMenu:
     
     def get_algorithm_name(self):
         return self.selected_option
+    
+    def get_complexity(self):
+        return self.complexity.get(self.selected_option, ["No complexity available"])
 
 
 class Button:
@@ -93,7 +96,7 @@ class DrawingInformation:
     ]
 
     FONT = pygame.font.SysFont('arial', 20)
-    LARGE_FONT = pygame.font.SysFont('arial', 40)
+    LARGE_FONT = pygame.font.SysFont('arial', 30)
     SIDE_PAD = 100
     TOP_PAD = 150
 
@@ -132,9 +135,9 @@ class DrawingInformation:
         dropdown_x = start_x + num_buttons * (self.BUTTON_WIDTH + self.BUTTON_PADDING)
         return button_positions, dropdown_x
 
-def draw(draw_info, buttons, dropdown, sort_name, ascending):
+def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'}",1,draw_info.BLACK)
+    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | Complexity: {complexity}",1,draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
 
     draw_list(draw_info)
@@ -357,7 +360,8 @@ def main():
                 sorting = False
         else:
             sort_name = dropdown.get_algorithm_name()
-            draw(draw_info, buttons, dropdown, sort_name, ascending)
+            complexity=dropdown.get_complexity()
+            draw(draw_info, buttons, dropdown, sort_name,complexity, ascending)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
