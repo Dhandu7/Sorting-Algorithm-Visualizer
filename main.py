@@ -84,8 +84,8 @@ class DrawingInformation:
         (192, 192, 192)
     ]
 
-    FONT = pygame.font.SysFont('comicsans', 20)
-    LARGE_FONT = pygame.font.SysFont('comicsans', 40)
+    FONT = pygame.font.SysFont('arial', 20)
+    LARGE_FONT = pygame.font.SysFont('arial', 40)
     SIDE_PAD = 100
     TOP_PAD = 150
 
@@ -224,8 +224,52 @@ def insertion_sort(draw_info,ascending=True):
             yield True
     return lst
 
-def merge_sort(draw_info,ascending=True):
-    lst=draw_info.lst
+def merge_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    def merge(left, right):
+        result = []
+        i = j = 0
+
+        while i < len(left) and j < len(right):
+            if (left[i] < right[j] and ascending) or (left[i] > right[j] and not ascending):
+                result.append(left[i])
+                i += 1
+            else:
+                result.append(right[j])
+                j += 1
+
+        result.extend(left[i:])
+        result.extend(right[j:])
+
+        return result
+
+    def merge_sort_recursive(lst, start, end):
+        if len(lst) > 1:
+            mid = len(lst) // 2
+            left_half = lst[:mid]
+            right_half = lst[mid:]
+
+            # Recursively sort both halves
+            merge_sort_recursive(left_half, start, start + mid - 1)
+            merge_sort_recursive(right_half, start + mid, end)
+
+            # Merge the sorted halves
+            merged_list = merge(left_half, right_half)
+
+            for i in range(len(merged_list)):
+                lst[i] = merged_list[i]
+
+                # Update the draw_info.lst with the current state
+                draw_info.lst[start:end+1] = lst
+
+                # Visualize the merging step
+                draw_list(draw_info, {start + i: draw_info.GREEN}, True)
+                yield True
+
+    yield from merge_sort_recursive(lst, 0, len(lst) - 1)
+    return lst
+
 
 def quick_sort(draw_info,ascending=True):
     lst=draw_info.lst
@@ -240,7 +284,7 @@ def main():
     max_val = 100
 
     lst = generate_starting_list(n, min_val, max_val)
-    draw_info = DrawingInformation(800, 600, lst)
+    draw_info = DrawingInformation(1440, 720, lst)
 
     num_buttons = 4
     dropdown_width = 150
