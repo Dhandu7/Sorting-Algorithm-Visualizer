@@ -227,52 +227,72 @@ def insertion_sort(draw_info,ascending=True):
 def merge_sort(draw_info, ascending=True):
     lst = draw_info.lst
 
-    def merge(left, right):
-        result = []
+    def merge(left, right, start):
+        merged = []
         i = j = 0
+        left_len = len(left)
+        right_len = len(right)
 
-        while i < len(left) and j < len(right):
-            if (left[i] < right[j] and ascending) or (left[i] > right[j] and not ascending):
-                result.append(left[i])
+        while i < left_len and j < right_len:
+            if (left[i] <= right[j] and ascending) or (left[i] >= right[j] and not ascending):
+                merged.append(left[i])
                 i += 1
             else:
-                result.append(right[j])
+                merged.append(right[j])
                 j += 1
 
-        result.extend(left[i:])
-        result.extend(right[j:])
+        while i < left_len:
+            merged.append(left[i])
+            i += 1
 
-        return result
+        while j < right_len:
+            merged.append(right[j])
+            j += 1
 
-    def merge_sort_recursive(lst, start, end):
-        if len(lst) > 1:
-            mid = len(lst) // 2
-            left_half = lst[:mid]
-            right_half = lst[mid:]
+        for i in range(len(merged)):
+            lst[start + i] = merged[i]
+            draw_list(draw_info, {start + i: draw_info.GREEN}, True)
+            yield True
 
-            # Recursively sort both halves
-            merge_sort_recursive(left_half, start, start + mid - 1)
-            merge_sort_recursive(right_half, start + mid, end)
+    def merge_sort_recursive(start, end):
+        if start < end:
+            mid = (start + end) // 2
+            yield from merge_sort_recursive(start, mid)
+            yield from merge_sort_recursive(mid + 1, end)
+            yield from merge(lst[start:mid+1], lst[mid+1:end+1], start)
 
-            # Merge the sorted halves
-            merged_list = merge(left_half, right_half)
+    yield from merge_sort_recursive(0, len(lst) - 1)
 
-            for i in range(len(merged_list)):
-                lst[i] = merged_list[i]
 
-                # Update the draw_info.lst with the current state
-                draw_info.lst[start:end+1] = lst
 
-                # Visualize the merging step
-                draw_list(draw_info, {start + i: draw_info.GREEN}, True)
+def quick_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    def partition(start, end):
+        pivot = lst[end]
+        low = start - 1
+
+        for high in range(start, end):
+            if (lst[high] < pivot and ascending) or (lst[high] > pivot and not ascending):
+                low += 1
+                lst[low], lst[high] = lst[high], lst[low]
+                draw_list(draw_info, {low: draw_info.GREEN, high: draw_info.RED}, True)
                 yield True
 
-    yield from merge_sort_recursive(lst, 0, len(lst) - 1)
+        lst[low + 1], lst[end] = lst[end], lst[low + 1]
+        draw_list(draw_info, {low + 1: draw_info.GREEN, end: draw_info.RED}, True)
+        yield True
+        return low + 1
+
+    def quick_sort_recursive(start, end):
+        if start < end:
+            p = yield from partition(start, end)
+            yield from quick_sort_recursive(start, p - 1)
+            yield from quick_sort_recursive(p + 1, end)
+
+    yield from quick_sort_recursive(0, len(lst) - 1)
     return lst
 
-
-def quick_sort(draw_info,ascending=True):
-    lst=draw_info.lst
 
 
 def main():
