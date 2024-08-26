@@ -95,7 +95,7 @@ class DrawingInformation:
         (192, 192, 192)
     ]
 
-    FONT = pygame.font.Font('arial', 20)
+    FONT = pygame.font.SysFont('arial', 20)
     LARGE_FONT = pygame.font.SysFont('arial', 30)
     SIDE_PAD = 100
     TOP_PAD = 150

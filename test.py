@@ -1,8 +1,12 @@
 import pygame
 import random
 import math
+import time
 pygame.init()
 
+class DescriptionMenu:
+    def __init__(self,x,y,font,background_color):
+        pass
 class DropdownMenu:
     def __init__(self, x, y, w, h, font, main_color, hover_color, options):
         self.rect = pygame.Rect(x, y, w, h)
@@ -20,13 +24,13 @@ class DropdownMenu:
             "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
-        self.code=[['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn'],['def bubble_sort(arr):\nfor n in range(len(arr) - 1, 0, -1):\nswapped = False\nfor i in range(n):\nif arr[i] > arr[i + 1]:\nswapped = True\narr[i], arr[i + 1] = arr[i + 1], arr[i]\nif not swapped:\nreturn']]
-        self.descriptions = {
+        self.code=['O(n^2)','O(nlogn)',]
+        self.complexity = {
             "Bubble Sort": self.code[0],
-            "Selection Sort": self.code[1],
-            "Insertion Sort": self.code[2],  
-            "Merge Sort": self.code[3],          
-            "Quick Sort": self.code[4] 
+            "Selection Sort": self.code[0],
+            "Insertion Sort": self.code[0],  
+            "Merge Sort": self.code[1],        
+            "Quick Sort": self.code[1] 
         }
 
     def draw(self, screen):
@@ -41,7 +45,7 @@ class DropdownMenu:
                 text_surf = self.font.render(option, True, (255, 255, 255))
                 screen.blit(text_surf, text_surf.get_rect(center=self.option_rects[i].center))
 
-    def handle_event(self, event):
+    def handle_event(self, event, reset_execution_time_callback):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = not self.active
@@ -50,18 +54,20 @@ class DropdownMenu:
                     if option_rect.collidepoint(event.pos):
                         self.selected_option = self.options[i]
                         self.active = False
+                        reset_execution_time_callback()  # Reset the execution time
                         break
                 else:
                     self.active = False
+
 
     def get_selected_option(self):
         return self.sorting_functions.get(self.selected_option)
     
     def get_algorithm_name(self):
         return self.selected_option
-
-    def get_description(self):
-        return self.descriptions.get(self.selected_option, ["No description available"])
+    
+    def get_complexity(self):
+        return self.complexity.get(self.selected_option, ["No complexity available"])
 
 
 class Button:
@@ -84,8 +90,8 @@ class Button:
 class DrawingInformation:
     BLACK = 0, 0, 0
     WHITE = 255, 255, 255
-    GREEN = 0, 255, 0
-    RED = 255, 0, 0
+    GREEN = 50, 205, 50
+    RED = 220, 20, 60
     BLUE = 50, 50, 150
     BACKGROUND_COLOR = WHITE
 
@@ -95,9 +101,8 @@ class DrawingInformation:
         (192, 192, 192)
     ]
 
-    FONT = pygame.font.SysFont('arial', 30)
-    LARGE_FONT = pygame.font.SysFont('arial', 40)
-    SMALL_FONT = pygame.font.SysFont('arial',10)
+    FONT = pygame.font.SysFont('arial', 20)
+    LARGE_FONT = pygame.font.SysFont('arial', 30)
     SIDE_PAD = 100
     TOP_PAD = 150
 
@@ -136,10 +141,12 @@ class DrawingInformation:
         dropdown_x = start_x + num_buttons * (self.BUTTON_WIDTH + self.BUTTON_PADDING)
         return button_positions, dropdown_x
 
-def draw(draw_info, buttons, dropdown, sort_name, ascending, description_text=None):
+def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending, execution_time):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'}",1,draw_info.BLACK)
+    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | Complexity: {complexity}",1,draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
+    execution = draw_info.FONT.render(f"{sort_name} executed in {execution_time if execution_time != 0 else '_'} seconds",1,draw_info.BLACK)
+    draw_info.window.blit(execution, (draw_info.width / 2 - execution.get_width() / 2, 45))
 
     draw_list(draw_info)
 
@@ -147,36 +154,6 @@ def draw(draw_info, buttons, dropdown, sort_name, ascending, description_text=No
         button.draw_button(draw_info.window)
 
     dropdown.draw(draw_info.window)
-
-    if description_text:
-        font = draw_info.SMALL_FONT
-        text_y = 10  # Start drawing the description from the top-left of the screen
-        text_x = 10  # Slight padding from the left edge
-
-        for line in description_text:
-            description_surface = font.render(line, True, draw_info.BLACK)
-            draw_info.window.blit(description_surface, (text_x, text_y))
-            text_y += description_surface.get_height() + 5  # Add some spacing between lines
-
-    pygame.display.update()
-    draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'}",1,draw_info.BLACK)
-    draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
-
-    draw_list(draw_info)
-
-    for button in buttons:
-        button.draw_button(draw_info.window)
-
-    dropdown.draw(draw_info.window)
-
-    if description_text:
-        font = pygame.font.SysFont('arial', 20)
-        text_y = 500  # Adjust this value as needed
-        for line in description_text:
-            description_surface = font.render(line, True, draw_info.BLACK)
-            draw_info.window.blit(description_surface, (50, text_y))  # Adjust X and Y coordinates as needed
-            text_y += description_surface.get_height() + 5  # Add some spacing between lines
 
     pygame.display.update()
 
@@ -217,122 +194,148 @@ def is_sorted(lst, ascending=True):
         return all(lst[i] <= lst[i + 1] for i in range(n - 1))
     else:
         return all(lst[i] >= lst[i + 1] for i in range(n - 1))
-    
-def bubble_sort(draw_info, ascending=True):
-    lst = draw_info.lst
 
-    for i in range(len(lst) - 1):
-        for j in range(len(lst) - 1 - i):
-            num1 = lst[j]
-            num2 = lst[j + 1]
+def bubble_sort(draw_info,ascending=True):
+    lst=draw_info.lst
+
+    for i in range(len(lst)-1):
+        for j in range(len(lst)-1-i):
+            num1=lst[j]
+            num2=lst[j+1]
 
             if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
-                lst[j], lst[j + 1] = lst[j + 1], lst[j]
-                draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
-                yield True
-    return lst
-
-def insertion_sort(draw_info, ascending=True):
-    lst = draw_info.lst
-
-    for i in range(1, len(lst)):
-        current = lst[i]
-
-        while True:
-            ascending_sort = i > 0 and lst[i - 1] > current and ascending
-            descending_sort = i > 0 and lst[i - 1] < current and not ascending
-
-            if not ascending_sort and not descending_sort:
-                break
-
-            lst[i] = lst[i - 1]
-            i = i - 1
-            lst[i] = current
-            draw_list(draw_info, {i: draw_info.GREEN, i - 1: draw_info.RED}, True)
-            yield True
+                lst[j],lst[j+1] = lst[j+1],lst[j]
+                draw_list(draw_info,{j:draw_info.GREEN,j+1:draw_info.RED},True)
+                yield True #saves current state
     return lst
 
 def selection_sort(draw_info, ascending=True):
     lst = draw_info.lst
+    if is_sorted(lst, ascending):
+        return
 
     for i in range(len(lst)):
-        min_idx = i
+        min_index = i
 
         for j in range(i + 1, len(lst)):
-            if (lst[j] < lst[min_idx] and ascending) or (lst[j] > lst[min_idx] and not ascending):
-                min_idx = j
+            draw_list(draw_info, {i: draw_info.BLUE, j: draw_info.RED, min_index: draw_info.GREEN}, True)
+            yield True  
 
-        lst[i], lst[min_idx] = lst[min_idx], lst[i]
-        draw_list(draw_info, {i: draw_info.GREEN, min_idx: draw_info.RED}, True)
-        yield True
+            if (lst[j] < lst[min_index] and ascending) or (lst[j] > lst[min_index] and not ascending):
+                min_index = j
+
+        # Swap the found minimum/maximum element with the first element
+        if min_index != i:
+            lst[i], lst[min_index] = lst[min_index], lst[i]
+            draw_list(draw_info, {i: draw_info.GREEN, min_index: draw_info.RED}, True)
+            yield True  
 
     return lst
 
-def quick_sort(draw_info, ascending=True):
-    lst = draw_info.lst
 
-    def quick_sort_recursion(lst, start, end):
-        if start >= end:
-            return
+def insertion_sort(draw_info,ascending=True):
+    lst=draw_info.lst
+    for i in range(1,len(lst)):
+        current=lst[i]
 
-        pivot = lst[end]
-        pivot_idx = start
+        while True:
+            ascending_sort= i >0 and lst[i-1] > current and ascending
+            descending_sort= i >0 and lst[i-1] < current and not ascending
 
-        for i in range(start, end):
-            if (lst[i] < pivot and ascending) or (lst[i] > pivot and not ascending):
-                lst[i], lst[pivot_idx] = lst[pivot_idx], lst[i]
-                pivot_idx += 1
+            if not ascending_sort and not descending_sort:
+                break
 
-        lst[end], lst[pivot_idx] = lst[pivot_idx], lst[end]
-        draw_list(draw_info, {pivot_idx: draw_info.GREEN}, True)
-        yield True
-
-        yield from quick_sort_recursion(lst, start, pivot_idx - 1)
-        yield from quick_sort_recursion(lst, pivot_idx + 1, end)
-
-    yield from quick_sort_recursion(lst, 0, len(lst) - 1)
-
+            lst[i] = lst[i-1]
+            i-=1
+            lst[i]=current
+            draw_list(draw_info,{i-1:draw_info.GREEN, i: draw_info.RED}, True)
+            yield True
     return lst
 
 def merge_sort(draw_info, ascending=True):
     lst = draw_info.lst
 
-    def merge_sort_recursion(lst, left, right):
-        if right <= left:
-            return
+    # Check if the list is already sorted
+    if is_sorted(lst, ascending):
+        return
 
-        mid = (left + right) // 2
-        yield from merge_sort_recursion(lst, left, mid)
-        yield from merge_sort_recursion(lst, mid + 1, right)
-        yield from merge(lst, left, mid, right, ascending)
-
-    def merge(lst, left, mid, right, ascending):
+    def merge(left, right, start):
         merged = []
-        left_idx, right_idx = left, mid + 1
+        i = j = 0
+        left_len = len(left)
+        right_len = len(right)
 
-        while left_idx <= mid and right_idx <= right:
-            if (lst[left_idx] < lst[right_idx] and ascending) or (lst[left_idx] > lst[right_idx] and not ascending):
-                merged.append(lst[left_idx])
-                left_idx += 1
+        while i < left_len and j < right_len:
+            if (left[i] <= right[j] and ascending) or (left[i] >= right[j] and not ascending):
+                merged.append(left[i])
+                i += 1
             else:
-                merged.append(lst[right_idx])
-                right_idx += 1
+                merged.append(right[j])
+                j += 1
 
-        while left_idx <= mid:
-            merged.append(lst[left_idx])
-            left_idx += 1
+        while i < left_len:
+            merged.append(left[i])
+            i += 1
 
-        while right_idx <= right:
-            merged.append(lst[right_idx])
-            right_idx += 1
+        while j < right_len:
+            merged.append(right[j])
+            j += 1
 
-        for i, sorted_val in enumerate(merged):
-            lst[left + i] = sorted_val
-            draw_list(draw_info, {left + i: draw_info.GREEN}, True)
+        for i in range(len(merged)):
+            lst[start + i] = merged[i]
+            draw_list(draw_info, {start + i: draw_info.GREEN}, True)
             yield True
 
-    yield from merge_sort_recursion(lst, 0, len(lst) - 1)
+    def merge_sort_recursive(start, end):
+        if start < end:
+            mid = (start + end) // 2
+            yield from merge_sort_recursive(start, mid)
+            yield from merge_sort_recursive(mid + 1, end)
+            yield from merge(lst[start:mid+1], lst[mid+1:end+1], start)
+
+    yield from merge_sort_recursive(0, len(lst) - 1)
+
+def quick_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    # Check if the list is already sorted
+    if is_sorted(lst, ascending):
+        return
+
+    def partition(start, end):
+        pivot = lst[end]
+        low = start - 1
+
+        for high in range(start, end):
+            if (lst[high] < pivot and ascending) or (lst[high] > pivot and not ascending):
+                low += 1
+                lst[low], lst[high] = lst[high], lst[low]
+                draw_list(draw_info, {low: draw_info.GREEN, high: draw_info.RED}, True)
+                yield True
+
+        lst[low + 1], lst[end] = lst[end], lst[low + 1]
+        draw_list(draw_info, {low + 1: draw_info.GREEN, end: draw_info.RED}, True)
+        yield True
+        return low + 1
+
+    def quick_sort_recursive(start, end):
+        if start < end:
+            p = yield from partition(start, end)
+            yield from quick_sort_recursive(start, p - 1)
+            yield from quick_sort_recursive(p + 1, end)
+
+    yield from quick_sort_recursive(0, len(lst) - 1)
     return lst
+
+
+import pygame
+import random
+import math
+import time  # Import the time module
+
+pygame.init()
+
+# Your existing code...
 
 def main():
     run = True
@@ -345,7 +348,7 @@ def main():
     lst = generate_starting_list(n, min_val, max_val)
     draw_info = DrawingInformation(800, 600, lst)
 
-    num_buttons = 5  # Updated number of buttons to include the Description button
+    num_buttons = 4
     dropdown_width = 150
 
     button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
@@ -354,15 +357,21 @@ def main():
     reset_button = Button(button_positions[1][0], button_positions[1][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Reset", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
     ascend_button = Button(button_positions[2][0], button_positions[2][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Ascend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
     descend_button = Button(button_positions[3][0], button_positions[3][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Descend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
-    desc_button = Button(button_positions[4][0], button_positions[4][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Description", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)  # New Description button
 
-    buttons = [sort_button, reset_button, ascend_button, descend_button, desc_button]
+    buttons = [sort_button, reset_button, ascend_button, descend_button]
 
     dropdown = DropdownMenu(dropdown_x, 75, dropdown_width, draw_info.BUTTON_HEIGHT, draw_info.FONT, (50, 50, 150), (100, 100, 200), ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"])
 
     sorting = False
     ascending = True
     sorting_algorithm_generator = None
+
+    start_time = 0  # To keep track of the start time
+    execution_time = 0
+
+    def reset_execution_time():
+        nonlocal execution_time
+        execution_time = 0
 
     while run:
         clock.tick(60)
@@ -372,9 +381,12 @@ def main():
                 next(sorting_algorithm_generator)
             except StopIteration:
                 sorting = False
+                end_time = time.time()  # Get the current time when sorting ends
+                execution_time = end_time - start_time  # Calculate the elapsed time
         else:
             sort_name = dropdown.get_algorithm_name()
-            draw(draw_info, buttons, dropdown, sort_name, ascending)
+            complexity = dropdown.get_complexity()
+            draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -387,14 +399,11 @@ def main():
 
                 button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
 
-                # Update button positions
                 sort_button.rect.topleft = button_positions[0]
                 reset_button.rect.topleft = button_positions[1]
                 ascend_button.rect.topleft = button_positions[2]
                 descend_button.rect.topleft = button_positions[3]
-                desc_button.rect.topleft = button_positions[4]
 
-                # Update dropdown position
                 dropdown.rect.topleft = (dropdown_x, 75)
                 dropdown.option_rects = [pygame.Rect(dropdown_x, 75 + (i + 1) * dropdown.rect.height, dropdown.rect.width, dropdown.rect.height) for i in range(len(dropdown.options))]
 
@@ -405,10 +414,13 @@ def main():
                     lst = generate_starting_list(n, min_val, max_val)
                     draw_info.set_list(lst)
                     sorting = False
+                    execution_time=0
 
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
                     selected_sort = dropdown.get_selected_option()
+                    execution_time = 0
+                    start_time = time.time()  # Get the current time when sorting starts
                     sorting_algorithm_generator = selected_sort(draw_info, ascending)
 
                 elif ascend_button.is_clicked(pos) and not sorting:
@@ -417,13 +429,7 @@ def main():
                 elif descend_button.is_clicked(pos) and not sorting:
                     ascending = False
 
-                elif desc_button.is_clicked(pos):
-                    selected_description = dropdown.get_description()
-                    draw(draw_info, buttons, dropdown, sort_name, ascending, description_text=selected_description)
-                    continue  # Skip the rest of the event loop to avoid clearing the description
-
-
-            dropdown.handle_event(event)
+            dropdown.handle_event(event, reset_execution_time)
 
     pygame.quit()
 
