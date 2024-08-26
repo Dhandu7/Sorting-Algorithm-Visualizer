@@ -3,10 +3,45 @@ import random
 import math
 import time
 pygame.init()
-
 class DescriptionMenu:
-    def __init__(self,x,y,font,background_color):
-        pass
+    def __init__(self, x, y, font, bg_color):
+        self.x = x
+        self.y = y
+        self.font = font
+        self.bg_color = bg_color
+        self.text = ""  # Initialize with an empty string
+        self.update_size()  # Set initial size
+
+    def update_text(self, new_text):
+        """Updates the text and adjusts the size accordingly."""
+        self.text = new_text
+        self.update_size()
+
+    def update_size(self):
+        """Updates the size of the menu based on the text length."""
+        lines = self.text.split('\n')
+        if lines:  # Ensure lines is not empty
+            max_width = max(self.font.size(line)[0] for line in lines)
+            total_height = sum(self.font.size(line)[1] for line in lines)
+            self.width = max_width + 20  # Add padding
+            self.height = total_height + 20  # Add padding
+        else:
+            # Default size if there is no text
+            self.width = 200
+            self.height = 50
+
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def draw(self, window):
+        """Draws the menu on the given window."""
+        pygame.draw.rect(window, self.bg_color, self.rect)
+        lines = self.text.split('\n')
+        y_offset = self.rect.y + 10
+        for line in lines:
+            text_surface = self.font.render(line, True, (0, 0, 0))
+            window.blit(text_surface, (self.rect.x + 10, y_offset))
+            y_offset += self.font.get_height()
+
 class DropdownMenu:
     def __init__(self, x, y, w, h, font, main_color, hover_color, options):
         self.rect = pygame.Rect(x, y, w, h)
@@ -24,7 +59,7 @@ class DropdownMenu:
             "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
-        self.code=['O(n^2)','O(nlogn)',]
+        self.code=['O(n\u00b2)','O(nlogn)',]
         self.complexity = {
             "Bubble Sort": self.code[0],
             "Selection Sort": self.code[0],
@@ -141,11 +176,11 @@ class DrawingInformation:
         dropdown_x = start_x + num_buttons * (self.BUTTON_WIDTH + self.BUTTON_PADDING)
         return button_positions, dropdown_x
 
-def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending, execution_time):
+def draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time, description_visible, description_menu):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | Complexity: {complexity}",1,draw_info.BLACK)
+    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | {complexity}", 1, draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
-    execution = draw_info.FONT.render(f"{sort_name} executed in {execution_time if execution_time != 0 else '_'} seconds",1,draw_info.BLACK)
+    execution = draw_info.FONT.render(f"{sort_name} executed in {execution_time if execution_time != 0 else '_'} seconds", 1, draw_info.BLACK)
     draw_info.window.blit(execution, (draw_info.width / 2 - execution.get_width() / 2, 45))
 
     draw_list(draw_info)
@@ -155,7 +190,11 @@ def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending, executio
 
     dropdown.draw(draw_info.window)
 
-    pygame.display.update()
+    if description_visible:
+        description_menu.draw(draw_info.window)  # Only draw the description if it's visible
+
+    pygame.display.update()  # Update the display after all drawing is done
+
 
 def draw_list(draw_info,color_positions={}, clear_bg=False):
     lst = draw_info.lst
@@ -327,16 +366,6 @@ def quick_sort(draw_info, ascending=True):
     yield from quick_sort_recursive(0, len(lst) - 1)
     return lst
 
-
-import pygame
-import random
-import math
-import time  # Import the time module
-
-pygame.init()
-
-# Your existing code...
-
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -348,7 +377,7 @@ def main():
     lst = generate_starting_list(n, min_val, max_val)
     draw_info = DrawingInformation(800, 600, lst)
 
-    num_buttons = 4
+    num_buttons = 5  # Updated to reflect the new number of buttons
     dropdown_width = 150
 
     button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
@@ -357,10 +386,14 @@ def main():
     reset_button = Button(button_positions[1][0], button_positions[1][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Reset", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
     ascend_button = Button(button_positions[2][0], button_positions[2][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Ascend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
     descend_button = Button(button_positions[3][0], button_positions[3][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Descend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+    description_button = Button(button_positions[4][0], button_positions[4][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Description", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
 
-    buttons = [sort_button, reset_button, ascend_button, descend_button]
+    buttons = [sort_button, reset_button, ascend_button, descend_button, description_button]
 
     dropdown = DropdownMenu(dropdown_x, 75, dropdown_width, draw_info.BUTTON_HEIGHT, draw_info.FONT, (50, 50, 150), (100, 100, 200), ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"])
+
+    # Initialize the DescriptionMenu
+    description_menu = DescriptionMenu(10, 100, draw_info.FONT, (200, 200, 200))  # Example positioning
 
     sorting = False
     ascending = True
@@ -368,10 +401,28 @@ def main():
 
     start_time = 0  # To keep track of the start time
     execution_time = 0
+    show_description = False
 
     def reset_execution_time():
         nonlocal execution_time
         execution_time = 0
+
+    def update_description():
+        """Updates the description text based on the selected sorting algorithm."""
+        selected_sort = dropdown.get_algorithm_name()
+        complexity = dropdown.get_complexity()
+
+        descriptions = {
+            "Bubble Sort": "Bubble Sort: A simple comparison-based algorithm.\nBest used for small data sets.\nComplexity: O(n²).",
+            "Selection Sort": "Selection Sort: Repeatedly selects the minimum.\nBest used for small, unsorted lists.\nComplexity: O(n²).",
+            "Insertion Sort": "Insertion Sort: Builds the sorted array one item at a time.\nBest for small, mostly sorted data.\nComplexity: O(n²).",
+            "Merge Sort": "Merge Sort: A divide-and-conquer algorithm.\nEfficient for large data sets.\nComplexity: O(n log n).",
+            "Quick Sort": "Quick Sort: Efficient in practice.\nUses divide-and-conquer, but not stable.\nComplexity: O(n log n)."
+        }
+
+        description_menu.update_text(descriptions[selected_sort])
+
+    update_description()  # Initialize with the first option
 
     while run:
         clock.tick(60)
@@ -382,11 +433,14 @@ def main():
             except StopIteration:
                 sorting = False
                 end_time = time.time()  # Get the current time when sorting ends
-                execution_time = end_time - start_time  # Calculate the elapsed time
-        else:
-            sort_name = dropdown.get_algorithm_name()
-            complexity = dropdown.get_complexity()
-            draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time)
+                execution_time = round((end_time - start_time), 4)  # Calculate the elapsed time
+
+        sort_name = dropdown.get_algorithm_name()
+        complexity = dropdown.get_complexity()
+
+        draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time, show_description, description_menu)
+
+        pygame.display.update()  # Update the display after all drawing is done
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -403,6 +457,7 @@ def main():
                 reset_button.rect.topleft = button_positions[1]
                 ascend_button.rect.topleft = button_positions[2]
                 descend_button.rect.topleft = button_positions[3]
+                description_button.rect.topleft = button_positions[4]
 
                 dropdown.rect.topleft = (dropdown_x, 75)
                 dropdown.option_rects = [pygame.Rect(dropdown_x, 75 + (i + 1) * dropdown.rect.height, dropdown.rect.width, dropdown.rect.height) for i in range(len(dropdown.options))]
@@ -414,7 +469,7 @@ def main():
                     lst = generate_starting_list(n, min_val, max_val)
                     draw_info.set_list(lst)
                     sorting = False
-                    execution_time=0
+                    execution_time = 0
 
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
@@ -429,7 +484,140 @@ def main():
                 elif descend_button.is_clicked(pos) and not sorting:
                     ascending = False
 
+                elif description_button.is_clicked(pos) and not sorting:
+                    show_description = not show_description  # Toggle the description menu visibility
+
             dropdown.handle_event(event, reset_execution_time)
+
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                update_description()  # Update the description when the dropdown changes
+
+    pygame.quit()
+
+    run = True
+    clock = pygame.time.Clock()
+
+    n = 50
+    min_val = 0
+    max_val = 100
+
+    lst = generate_starting_list(n, min_val, max_val)
+    draw_info = DrawingInformation(800, 600, lst)
+
+    num_buttons = 5  # Updated to reflect the new number of buttons
+    dropdown_width = 150
+
+    button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
+
+    sort_button = Button(button_positions[0][0], button_positions[0][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Sort", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+    reset_button = Button(button_positions[1][0], button_positions[1][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Reset", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+    ascend_button = Button(button_positions[2][0], button_positions[2][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Ascend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+    descend_button = Button(button_positions[3][0], button_positions[3][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Descend", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+    description_button = Button(button_positions[4][0], button_positions[4][1], draw_info.BUTTON_WIDTH, draw_info.BUTTON_HEIGHT, "Description", draw_info.BUTTON_FONT, draw_info.BUTTON_BG_COLOR, draw_info.BUTTON_TEXT_COLOR)
+
+    buttons = [sort_button, reset_button, ascend_button, descend_button, description_button]
+
+    dropdown = DropdownMenu(dropdown_x, 75, dropdown_width, draw_info.BUTTON_HEIGHT, draw_info.FONT, (50, 50, 150), (100, 100, 200), ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"])
+
+    # Initialize the DescriptionMenu
+    description_menu = DescriptionMenu(10, 100, draw_info.FONT, (200, 200, 200))  # Example positioning
+
+    sorting = False
+    ascending = True
+    sorting_algorithm_generator = None
+
+    start_time = 0  # To keep track of the start time
+    execution_time = 0
+    show_description = False
+
+    def reset_execution_time():
+        nonlocal execution_time
+        execution_time = 0
+
+    def update_description():
+        """Updates the description text based on the selected sorting algorithm."""
+        selected_sort = dropdown.get_algorithm_name()
+        complexity = dropdown.get_complexity()
+
+        descriptions = {
+            "Bubble Sort": "Bubble Sort: A simple comparison-based algorithm.\nBest used for small data sets.\nComplexity: O(n²).",
+            "Selection Sort": "Selection Sort: Repeatedly selects the minimum.\nBest used for small, unsorted lists.\nComplexity: O(n²).",
+            "Insertion Sort": "Insertion Sort: Builds the sorted array one item at a time.\nBest for small, mostly sorted data.\nComplexity: O(n²).",
+            "Merge Sort": "Merge Sort: A divide-and-conquer algorithm.\nEfficient for large data sets.\nComplexity: O(n log n).",
+            "Quick Sort": "Quick Sort: Efficient in practice.\nUses divide-and-conquer, but not stable.\nComplexity: O(n log n)."
+        }
+
+        description_menu.update_text(descriptions[selected_sort])
+
+    update_description()  # Initialize with the first option
+
+    while run:
+        clock.tick(60)
+
+        if sorting:
+            try:
+                next(sorting_algorithm_generator)
+            except StopIteration:
+                sorting = False
+                end_time = time.time()  # Get the current time when sorting ends
+                execution_time = round((end_time - start_time), 4)  # Calculate the elapsed time
+
+        sort_name = dropdown.get_algorithm_name()
+        complexity = dropdown.get_complexity()
+
+        draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time, show_description, description_menu)
+
+        pygame.display.update()  # Update the display after all drawing is done
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if event.type == pygame.VIDEORESIZE:
+                draw_info.width, draw_info.height = event.w, event.h
+                draw_info.window = pygame.display.set_mode((draw_info.width, draw_info.height), pygame.RESIZABLE)
+                draw_info.set_list(draw_info.lst)
+
+                button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
+
+                sort_button.rect.topleft = button_positions[0]
+                reset_button.rect.topleft = button_positions[1]
+                ascend_button.rect.topleft = button_positions[2]
+                descend_button.rect.topleft = button_positions[3]
+                description_button.rect.topleft = button_positions[4]
+
+                dropdown.rect.topleft = (dropdown_x, 75)
+                dropdown.option_rects = [pygame.Rect(dropdown_x, 75 + (i + 1) * dropdown.rect.height, dropdown.rect.width, dropdown.rect.height) for i in range(len(dropdown.options))]
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+
+                if reset_button.is_clicked(pos):
+                    lst = generate_starting_list(n, min_val, max_val)
+                    draw_info.set_list(lst)
+                    sorting = False
+                    execution_time = 0
+
+                elif sort_button.is_clicked(pos) and not sorting:
+                    sorting = True
+                    selected_sort = dropdown.get_selected_option()
+                    execution_time = 0
+                    start_time = time.time()  # Get the current time when sorting starts
+                    sorting_algorithm_generator = selected_sort(draw_info, ascending)
+
+                elif ascend_button.is_clicked(pos) and not sorting:
+                    ascending = True
+
+                elif descend_button.is_clicked(pos) and not sorting:
+                    ascending = False
+
+                elif description_button.is_clicked(pos) and not sorting:
+                    show_description = not show_description  # Toggle the description menu visibility
+
+            dropdown.handle_event(event, reset_execution_time)
+
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                update_description()  # Update the description when the dropdown changes
 
     pygame.quit()
 
