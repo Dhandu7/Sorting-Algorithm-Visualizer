@@ -609,7 +609,7 @@ def main():
     dropdown = DropdownMenu(dropdown_x, 75, dropdown_width, draw_info.BUTTON_HEIGHT, draw_info.FONT, (50, 50, 150), (100, 100, 200), ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"])
 
     # Initialize the DescriptionMenu
-    description_menu = DescriptionMenu(10, 100, draw_info.FONT, draw_info.BLUE)  # Example positioning
+    description_menu = DescriptionMenu(10, 100, draw_info.FONT, draw_info.BLUE, draw_info.WHITE)  # Example positioning
 
     sorting = False
     ascending = True
