@@ -1,8 +1,12 @@
 import pygame
 import random
 import math
+import time
 pygame.init()
 
+class DescriptionMenu:
+    def __init__(self,x,y,font,background_color):
+        pass
 class DropdownMenu:
     def __init__(self, x, y, w, h, font, main_color, hover_color, options):
         self.rect = pygame.Rect(x, y, w, h)
@@ -20,7 +24,7 @@ class DropdownMenu:
             "Merge Sort": merge_sort,          
             "Quick Sort": quick_sort 
         }
-        self.code=['O(n^2)','O(nlogn)',]
+        self.code=['O(n\u00b2)','O(nlogn)',]
         self.complexity = {
             "Bubble Sort": self.code[0],
             "Selection Sort": self.code[0],
@@ -41,7 +45,7 @@ class DropdownMenu:
                 text_surf = self.font.render(option, True, (255, 255, 255))
                 screen.blit(text_surf, text_surf.get_rect(center=self.option_rects[i].center))
 
-    def handle_event(self, event):
+    def handle_event(self, event, reset_execution_time_callback):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = not self.active
@@ -50,9 +54,11 @@ class DropdownMenu:
                     if option_rect.collidepoint(event.pos):
                         self.selected_option = self.options[i]
                         self.active = False
+                        reset_execution_time_callback()  # Reset the execution time
                         break
                 else:
                     self.active = False
+
 
     def get_selected_option(self):
         return self.sorting_functions.get(self.selected_option)
@@ -135,10 +141,12 @@ class DrawingInformation:
         dropdown_x = start_x + num_buttons * (self.BUTTON_WIDTH + self.BUTTON_PADDING)
         return button_positions, dropdown_x
 
-def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending):
+def draw(draw_info, buttons, dropdown, sort_name,complexity, ascending, execution_time):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | Complexity: {complexity}",1,draw_info.BLACK)
+    title = draw_info.LARGE_FONT.render(f"{sort_name} - {'Ascending' if ascending else 'Descending'} | {complexity}",1,draw_info.BLACK)
     draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
+    execution = draw_info.FONT.render(f"{sort_name} executed in {execution_time if execution_time != 0 else '_'} seconds",1,draw_info.BLACK)
+    draw_info.window.blit(execution, (draw_info.width / 2 - execution.get_width() / 2, 45))
 
     draw_list(draw_info)
 
@@ -320,6 +328,15 @@ def quick_sort(draw_info, ascending=True):
     return lst
 
 
+import pygame
+import random
+import math
+import time  # Import the time module
+
+pygame.init()
+
+# Your existing code...
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -347,8 +364,14 @@ def main():
 
     sorting = False
     ascending = True
-
     sorting_algorithm_generator = None
+
+    start_time = 0  # To keep track of the start time
+    execution_time = 0
+
+    def reset_execution_time():
+        nonlocal execution_time
+        execution_time = 0
 
     while run:
         clock.tick(60)
@@ -358,10 +381,12 @@ def main():
                 next(sorting_algorithm_generator)
             except StopIteration:
                 sorting = False
+                end_time = time.time()  # Get the current time when sorting ends
+                execution_time = round((end_time - start_time),4)  # Calculate the elapsed time
         else:
             sort_name = dropdown.get_algorithm_name()
-            complexity=dropdown.get_complexity()
-            draw(draw_info, buttons, dropdown, sort_name,complexity, ascending)
+            complexity = dropdown.get_complexity()
+            draw(draw_info, buttons, dropdown, sort_name, complexity, ascending, execution_time)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -374,13 +399,11 @@ def main():
 
                 button_positions, dropdown_x = draw_info.calculate_button_positions(num_buttons, dropdown_width)
 
-                # Update button positions
                 sort_button.rect.topleft = button_positions[0]
                 reset_button.rect.topleft = button_positions[1]
                 ascend_button.rect.topleft = button_positions[2]
                 descend_button.rect.topleft = button_positions[3]
 
-                # Update dropdown position
                 dropdown.rect.topleft = (dropdown_x, 75)
                 dropdown.option_rects = [pygame.Rect(dropdown_x, 75 + (i + 1) * dropdown.rect.height, dropdown.rect.width, dropdown.rect.height) for i in range(len(dropdown.options))]
 
@@ -391,10 +414,13 @@ def main():
                     lst = generate_starting_list(n, min_val, max_val)
                     draw_info.set_list(lst)
                     sorting = False
+                    execution_time=0
 
                 elif sort_button.is_clicked(pos) and not sorting:
                     sorting = True
                     selected_sort = dropdown.get_selected_option()
+                    execution_time = 0
+                    start_time = time.time()  # Get the current time when sorting starts
                     sorting_algorithm_generator = selected_sort(draw_info, ascending)
 
                 elif ascend_button.is_clicked(pos) and not sorting:
@@ -403,7 +429,7 @@ def main():
                 elif descend_button.is_clicked(pos) and not sorting:
                     ascending = False
 
-            dropdown.handle_event(event)
+            dropdown.handle_event(event, reset_execution_time)
 
     pygame.quit()
 
