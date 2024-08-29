@@ -4,9 +4,8 @@ This repository contains a Pygame-based application for visualizing various sort
 
 ## Features
 
-- Visualize sorting algorithms like Bubble Sort, Merge Sort, Quick Sort, and more.
-- Interactive controls to start, pause, and reset the visualization.
-- Adjustable speed for the visualization to suit your preference.
+- Visualize sorting algorithms like Bubble Sort, Insertion Sort, Selection Sort, Merge Sort, Quick Sort.
+- Ability to reset the data, track execution time, and show python code for the selected algorithm
 
 ## Prerequisites
 
@@ -21,15 +20,15 @@ pip install pygame
 ## Running the Application
 
 To run the program, navigate to the source folder and run the command:
-python main.py
+- python main.py
 
 Alternatively (macOS) run:
-python3 main.py
+- python3 main.py
 
 ## Using Beta Features
 
 To use beta features that still may have bugs, navigate to the source folder and run the command:
-python test.py
+- python test.py
 
 Alternatively (macOS) run:
-python3 test.py
+- python3 test.py
